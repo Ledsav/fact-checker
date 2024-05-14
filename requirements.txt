@@ -1,0 +1,6 @@
+pandas~=2.2.2
+requests~=2.31.0
+spacy~=3.7.4
+beautifulsoup4~=4.12.3
+transformers~=4.40.2
+nltk~=3.8.1
