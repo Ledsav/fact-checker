@@ -1,3 +1,4 @@
+import string
 import time
 from concurrent.futures import ThreadPoolExecutor
 from difflib import SequenceMatcher
@@ -6,6 +7,8 @@ import pandas as pd
 import requests
 import spacy
 from bs4 import BeautifulSoup
+from nltk import word_tokenize
+from nltk.corpus import stopwords
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from tabulate import tabulate
 
@@ -19,7 +22,6 @@ class APIRateLimiter:
 
     def can_make_call(self):
         current_time = time.time()
-        # Remove calls older than 1 minute
         self.call_times = [t for t in self.call_times if t > current_time - 60]
         return len(self.call_times) < self.max_calls_per_minute
 
@@ -47,6 +49,7 @@ class DataFetcher:
         api_key = config.GOOGLE_FACT_CHECK_API_KEY
         search_url = f"https://factchecktools.googleapis.com/v1alpha1/claims:search?query={claim}&key={api_key}"
 
+        print(f"Making request to URL: {search_url}")  # Debugging information
         if not self.rate_limiter.can_make_call():
             print("Rate limit exceeded, waiting...")
             time.sleep(60)  # Wait for a minute before retrying
@@ -92,13 +95,39 @@ class DataFetcher:
         return entities
 
 
+class ClaimStandardizer:
+
+    def __init__(self, claim, language="english"):
+        self.claim = claim
+        self.language = language
+
+    def standardize(self) -> str:
+        standardized_claim = self.claim.strip()
+        standardized_claim = standardized_claim.lower()
+
+        standardized_claim = standardized_claim.translate(
+            str.maketrans("", "", string.punctuation)
+        )
+
+        tokens = word_tokenize(standardized_claim)
+        stop_words = set(stopwords.words(self.language))
+        filtered_tokens = [token for token in tokens if token not in stop_words]
+        optimized_claim = " ".join(filtered_tokens)
+
+        return optimized_claim
+
+
 class ClaimAnalyzer:
     def __init__(self, services):
         self.data_fetcher = DataFetcher()
+        self.claim_standardizer = ClaimStandardizer
         self.services = services
 
     def analyze_claim(self, claim):
         futures = {}
+        claim = self.claim_standardizer(claim).standardize()
+        print("Standardized claim: ", claim)
+
         with ThreadPoolExecutor() as executor:
             if "wikipedia" in self.services:
                 futures["wikipedia"] = executor.submit(
@@ -160,25 +189,20 @@ class ClaimAnalyzer:
 
 
 def get_sentiment_score(text):
-    # Initialize VADER sentiment analyzer
     sid = SentimentIntensityAnalyzer()
-
-    # Get the sentiment scores
     sentiment_scores = sid.polarity_scores(text)
-
-    # Calculate a score based on the compound score
     compound_score = sentiment_scores["compound"]
-
-    # Convert compound score to a percentage
     score = (compound_score + 1) / 2 * 100  # Scale from [-1, 1] to [0, 100]
     print(f"compound_score: {compound_score}, score: {score}")
     return score
 
 
 def format_google_fact_check_results(fact_check_data):
-    # Create a list to hold the formatted data
-    formatted_data = []
+    if not fact_check_data:
+        print("No Google Fact Check data found.")
+        return
 
+    formatted_data = []
     for claim in fact_check_data:
         text = claim.get("text", "N/A")
         claim_date = claim.get("claimDate", "N/A")
@@ -230,19 +254,17 @@ def format_google_fact_check_results(fact_check_data):
         ],
     )
 
-    # Print the columns claim text, textual rating, and score
     print(tabulate(df[["Claim Text", "Textual Rating", "Score"]], headers="keys"))
 
 
 def main():
     claim = input("Enter the claim to analyze: ")
-    services = input(
-        "Enter the services to use (comma separated, options: wikipedia, newsapi, google_fact_check): "
-    ).split(",")
-    services = [service.strip() for service in services]
+    print("the claim is: ", claim)
+    services = ["google_fact_check"]
 
     analyzer = ClaimAnalyzer(services)
     result = analyzer.analyze_claim(claim)
+    print("result is: ", result)
 
     # Print results for validation
     print("\nAnalysis Results:")

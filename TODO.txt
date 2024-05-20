@@ -1,0 +1,7 @@
+#todo: add check on the presence of new data in comparison to the one already stored
+#todo: define a common structure for different data-sources
+#todo: improve the standardization of html content from pages like wikipedia
+#todo: implement a processing block for text -> standard_text for the inputs
+#todo: implement audio -> text block
+#todo: implement video -> audio -> text block
+#todo: implement API to trigger the extraction
