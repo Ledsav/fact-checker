@@ -1,5 +1,8 @@
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import pandas as pd
+import plotly.graph_objects as go
 import seaborn as sns
 
 from scripts.path_operators import get_datasets_dir
@@ -13,7 +16,7 @@ def load_dataset(file_path):
     :param file_path: Path to the Parquet file
     :return: DataFrame with the loaded data
     """
-    if not file_path.exists():
+    if not Path(file_path).exists():
         raise FileNotFoundError(f"The file {file_path} does not exist.")
     return pd.read_parquet(file_path)
 
@@ -49,7 +52,7 @@ def find_lowest_avg_score_by_politician(df):
     ]
     print(
         f"The politician with the lowest average credibility score is: {lowest_avg_score['author']} with a score of "
-        f"{lowest_avg_score['normalized_score']}"
+        f"{lowest_avg_score['normalized_score']:.2f}"
     )
 
 
@@ -61,7 +64,7 @@ def find_highest_avg_score_by_party(df):
     ]
     print(
         f"The party with the highest average credibility score is: {highest_avg_score['party']} with a score of "
-        f"{highest_avg_score['normalized_score']}"
+        f"{highest_avg_score['normalized_score']:.2f}"
     )
 
 
@@ -71,24 +74,21 @@ def plot_credibility_by_politician(df):
     credibility_by_politician = credibility_by_politician.sort_values(
         by="normalized_score", ascending=False
     )
-    top_politicians = credibility_by_politician.head(10)
-    bottom_politicians = credibility_by_politician.tail(10)
-    selected_politicians = pd.concat([top_politicians, bottom_politicians])
-
     plt.figure(figsize=(14, 8))
     sns.set_theme(style="darkgrid")
     sns.barplot(
         x="normalized_score",
         y="author",
-        data=selected_politicians,
-        palette="viridis",
         hue="author",
+        data=credibility_by_politician,
+        palette="viridis",
         dodge=False,
         legend=False,
     )
     plt.xlabel("Normalized Average Credibility Score")
     plt.ylabel("Politician")
     plt.title("Overall Credibility by Politicians")
+    plt.tight_layout()
     plt.show()
 
 
@@ -96,32 +96,27 @@ def plot_credibility_by_politician(df):
 def plot_credibility_by_party(df):
     credibility_by_party = get_score_df_grouped_by_party(df)
     credibility_by_party = credibility_by_party.sort_values(
-        by="normalized_score", ascending=False
+        "normalized_score", ascending=False
     )
-    top_parties = credibility_by_party.head(10)
-    bottom_parties = credibility_by_party.tail(10)
-    selected_parties = pd.concat([top_parties, bottom_parties])
-
     plt.figure(figsize=(14, 8))
     sns.set_theme(style="darkgrid")
     sns.barplot(
         x="normalized_score",
         y="party",
-        data=selected_parties,
-        palette="viridis",
         hue="party",
+        data=credibility_by_party,
+        palette="viridis",
         dodge=False,
         legend=False,
     )
     plt.xlabel("Normalized Average Credibility Score")
     plt.ylabel("Party")
     plt.title("Overall Credibility by Parties")
+    plt.tight_layout()
     plt.show()
 
 
 # Additional visualizations
-
-
 def plot_score_distribution(df):
     plt.figure(figsize=(14, 8))
     sns.set_theme(style="darkgrid")
@@ -131,29 +126,82 @@ def plot_score_distribution(df):
     plt.xlabel("Score")
     plt.ylabel("Count")
     plt.title("Distribution of Scores by Politicians")
-    plt.legend(loc="upper right")
+    plt.legend(loc="upper right", bbox_to_anchor=(1.15, 1))
+    plt.tight_layout()
     plt.show()
 
 
-def plot_scores_over_time(df):
-    df["date"] = pd.to_datetime(df["date"], errors="coerce")
-    df = df.dropna(subset=["date"])
-    plt.figure(figsize=(14, 8))
-    sns.set_theme(style="darkgrid")
-    sns.lineplot(
-        data=df, x="date", y="score", hue="author", palette="viridis", marker="o"
+def plot_interactive(df, mode="light"):
+    # Calculate average scores for each politician
+    avg_scores = df.groupby("author")["score"].mean().reset_index()
+
+    # Settings for dark or light mode
+    if mode == "dark":
+        background_color = "#1f1f1f"
+        text_color = "#ffffff"
+        grid_color = "#444444"
+        template = "plotly_dark"
+    else:
+        background_color = "#ffffff"
+        text_color = "#000000"
+        grid_color = "#cccccc"
+        template = "plotly_white"
+
+    fig = go.Figure()
+
+    for i, author in enumerate(avg_scores["author"].unique()):
+        author_data = avg_scores[avg_scores["author"] == author]
+        fig.add_trace(
+            go.Bar(
+                x=author_data["score"],
+                y=author_data["author"],
+                name=author,
+                orientation="h",
+                marker=dict(
+                    line=dict(color="#000000", width=1),
+                    opacity=0.8,
+                ),
+                hoverinfo="x+y+name",
+                hoverlabel=dict(bgcolor="#ffffff", font_size=16, font_family="Roboto"),
+            )
+        )
+
+    fig.update_layout(
+        title={
+            "text": "Interactive Average Scores by Politicians",
+            "y": 0.95,
+            "x": 0.5,
+            "xanchor": "center",
+            "yanchor": "top",
+        },
+        title_font=dict(size=24, color=text_color),
+        xaxis=dict(
+            title="Average Score",
+            titlefont=dict(size=18, color=text_color),
+            tickfont=dict(size=14, color=text_color),
+            showgrid=False,  # Hide the grid for a cleaner look
+            zeroline=False,  # Hide the zero line
+        ),
+        yaxis=dict(
+            title="Politician",
+            titlefont=dict(size=18, color=text_color),
+            tickfont=dict(size=14, color=text_color),
+            showgrid=True,
+            gridcolor=grid_color,
+        ),
+        paper_bgcolor=background_color,
+        plot_bgcolor=background_color,
+        font=dict(color=text_color, family="Roboto"),
+        margin=dict(l=100, r=50, t=100, b=50),
+        hovermode="y unified",
+        template=template,
     )
-    plt.xlabel("Date")
-    plt.ylabel("Score")
-    plt.title("Scores Over Time by Politicians")
-    plt.legend(loc="upper right")
-    plt.show()
+
+    fig.show()
 
 
 def main():
-    df = load_dataset(
-        get_datasets_dir() / "processed_fact_checking_with_scores.parquet"
-    )
+    df = load_dataset(get_datasets_dir("processed_fact_checking_with_scores.parquet"))
 
     # Find the politician with the lowest average credibility score
     find_lowest_avg_score_by_politician(df)
@@ -167,9 +215,8 @@ def main():
     # Plot the average credibility scores for parties
     plot_credibility_by_party(df)
 
-    # Additional visualizations
-    plot_score_distribution(df)
-    plot_scores_over_time(df)
+    # Plot interactive average scores
+    plot_interactive(df)
 
 
 if __name__ == "__main__":

@@ -4,16 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e3410b69-1f5d-4be9-9a05-16267d897e5a" name="Changes" comment="added google fact-checker api and structured more the result">
-      <change afterPath="$PROJECT_DIR$/.idea/dataSources.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/TODO.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/analysis.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/path_operators.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/scraping.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.gitignore" afterDir="false" />
+    <list default="true" id="e3410b69-1f5d-4be9-9a05-16267d897e5a" name="Changes" comment="added scraping.py, processing and analysis.py after shifting the focus of the app">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/datasets/fact_checking_with_verdict.parquet" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/datasets/processed_fact_checking_with_scores.parquet" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/prototyping.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/prototyping.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/analysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/analysis.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/path_operators.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/path_operators.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/processing.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/processing.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/scraping.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/scraping.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -57,27 +56,27 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python.analysis.executor": "Run",
-    "Python.processing.executor": "Run",
-    "Python.prototyping.executor": "Run",
-    "Python.scraping.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "C:/Users/megaa/OneDrive/Desktop/projects/fact-checker/fact-checker/datasets/processed_fact_checking_with_scores.parquet",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.stylelint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.stylelint": "",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "com.jetbrains.python.black.configuration.BlackFormatterConfigurable",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python.analysis.executor&quot;: &quot;Run&quot;,
+    &quot;Python.processing.executor&quot;: &quot;Run&quot;,
+    &quot;Python.prototyping.executor&quot;: &quot;Run&quot;,
+    &quot;Python.scraping.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/megaa/OneDrive/Desktop/projects/fact-checker/fact-checker/datasets/processed_fact_checking_with_scores.parquet&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.stylelint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.stylelint&quot;: &quot;&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.black.configuration.BlackFormatterConfigurable&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\megaa\OneDrive\Desktop\projects\fact-checker\fact-checker\datasets" />
@@ -207,7 +206,8 @@
       <workItem from="1715869567944" duration="957000" />
       <workItem from="1715959071592" duration="1231000" />
       <workItem from="1715960325109" duration="2410000" />
-      <workItem from="1716215517688" duration="13847000" />
+      <workItem from="1716215517688" duration="17260000" />
+      <workItem from="1716403329667" duration="11596000" />
     </task>
     <task id="LOCAL-00001" summary="prototyping the first fact-checker from typed txt">
       <option name="closed" value="true" />
@@ -225,7 +225,15 @@
       <option name="project" value="LOCAL" />
       <updated>1715727332216</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="added scraping.py, processing and analysis.py after shifting the focus of the app">
+      <option name="closed" value="true" />
+      <created>1716249055979</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1716249055979</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -245,12 +253,13 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="prototyping the first fact-checker from typed txt" />
     <MESSAGE value="added google fact-checker api and structured more the result" />
-    <option name="LAST_COMMIT_MESSAGE" value="added google fact-checker api and structured more the result" />
+    <MESSAGE value="added scraping.py, processing and analysis.py after shifting the focus of the app" />
+    <option name="LAST_COMMIT_MESSAGE" value="added scraping.py, processing and analysis.py after shifting the focus of the app" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/fact_checker$analysis.coverage" NAME="analysis Coverage Results" MODIFIED="1716248798325" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
-    <SUITE FILE_PATH="coverage/fact_checker$processing.coverage" NAME="processing Coverage Results" MODIFIED="1716246309565" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
+    <SUITE FILE_PATH="coverage/fact_checker$analysis.coverage" NAME="analysis Coverage Results" MODIFIED="1716420021518" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
+    <SUITE FILE_PATH="coverage/fact_checker$processing.coverage" NAME="processing Coverage Results" MODIFIED="1716415520389" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
     <SUITE FILE_PATH="coverage/fact_checker$prototyping.coverage" NAME="prototyping Coverage Results" MODIFIED="1715974342935" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
-    <SUITE FILE_PATH="coverage/fact_checker$scraping.coverage" NAME="scraping Coverage Results" MODIFIED="1716243922165" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
+    <SUITE FILE_PATH="coverage/fact_checker$scraping.coverage" NAME="scraping Coverage Results" MODIFIED="1716414813099" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
   </component>
 </project>

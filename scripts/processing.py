@@ -73,6 +73,15 @@ def classify_verdict(verdict):
 
 
 def process_dataset(df):
+    # remove rows with empty is 'No verdict available'
+    df = df[df["verdict"] != "No verdict available"]
+
+    # remove rows with empty 'verdict'
+    df = df.dropna(subset=["verdict"])
+
+    # remove duplicates
+    df = df.drop_duplicates(subset=["id"])
+
     # Function to process the dataset and classify verdicts
     df["score"] = df["verdict"].apply(classify_verdict)
     return df
@@ -85,8 +94,8 @@ def save_dataset(df, file_path):
 
 def main():
     # Main function to run the script
-    input_path = get_datasets_dir() / "fact_checking_with_verdict.parquet"
-    output_path = get_datasets_dir() / "processed_fact_checking_with_scores.parquet"
+    input_path = get_datasets_dir("fact_checking_with_verdict.parquet")
+    output_path = get_datasets_dir("processed_fact_checking_with_scores.parquet")
 
     # Load the dataset
     df = load_dataset(input_path)
