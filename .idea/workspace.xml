@@ -4,16 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e3410b69-1f5d-4be9-9a05-16267d897e5a" name="Changes" comment="added scraping.py, processing and analysis.py after shifting the focus of the app">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/datasets/fact_checking_with_verdict.parquet" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/datasets/processed_fact_checking_with_scores.parquet" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/analysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/analysis.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/path_operators.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/path_operators.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/processing.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/processing.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/scraping.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/scraping.py" afterDir="false" />
-    </list>
+    <list default="true" id="e3410b69-1f5d-4be9-9a05-16267d897e5a" name="Changes" comment="improved scraping logic indexing the database and expanded analysis creating interactive plot." />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -207,7 +198,7 @@
       <workItem from="1715959071592" duration="1231000" />
       <workItem from="1715960325109" duration="2410000" />
       <workItem from="1716215517688" duration="17260000" />
-      <workItem from="1716403329667" duration="11596000" />
+      <workItem from="1716403329667" duration="11890000" />
     </task>
     <task id="LOCAL-00001" summary="prototyping the first fact-checker from typed txt">
       <option name="closed" value="true" />
@@ -233,7 +224,15 @@
       <option name="project" value="LOCAL" />
       <updated>1716249055979</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="improved scraping logic indexing the database and expanded analysis creating interactive plot.">
+      <option name="closed" value="true" />
+      <created>1716420373477</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1716420373477</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -254,10 +253,11 @@
     <MESSAGE value="prototyping the first fact-checker from typed txt" />
     <MESSAGE value="added google fact-checker api and structured more the result" />
     <MESSAGE value="added scraping.py, processing and analysis.py after shifting the focus of the app" />
-    <option name="LAST_COMMIT_MESSAGE" value="added scraping.py, processing and analysis.py after shifting the focus of the app" />
+    <MESSAGE value="improved scraping logic indexing the database and expanded analysis creating interactive plot." />
+    <option name="LAST_COMMIT_MESSAGE" value="improved scraping logic indexing the database and expanded analysis creating interactive plot." />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/fact_checker$analysis.coverage" NAME="analysis Coverage Results" MODIFIED="1716420021518" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
+    <SUITE FILE_PATH="coverage/fact_checker$analysis.coverage" NAME="analysis Coverage Results" MODIFIED="1716420140457" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
     <SUITE FILE_PATH="coverage/fact_checker$processing.coverage" NAME="processing Coverage Results" MODIFIED="1716415520389" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
     <SUITE FILE_PATH="coverage/fact_checker$prototyping.coverage" NAME="prototyping Coverage Results" MODIFIED="1715974342935" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
     <SUITE FILE_PATH="coverage/fact_checker$scraping.coverage" NAME="scraping Coverage Results" MODIFIED="1716414813099" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
