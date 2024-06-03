@@ -7,3 +7,7 @@ def get_project_root() -> Path:
 
 def get_datasets_dir(path: str) -> Path:
     return get_project_root() / "datasets" / path
+
+
+def get_firebase_key_path() -> Path:
+    return get_project_root() / "key_firebase.json"
