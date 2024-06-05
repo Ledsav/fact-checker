@@ -4,37 +4,65 @@ from firebase_admin import credentials, firestore
 
 from scripts.path_operators import get_datasets_dir, get_firebase_key_path
 
-# Path to your Parquet file
-file_path = get_datasets_dir("processed_fact_checking_with_scores.parquet")
 
-# Read the Parquet file
-df = pd.read_parquet(file_path)
+class FirebaseHandler:
+    def __init__(self, key_path):
+        self.cred = credentials.Certificate(key_path)
+        self.app = firebase_admin.initialize_app(self.cred)
+        self.db = firestore.client()
 
-# Path to your Firebase service account key file
-cred = credentials.Certificate(get_firebase_key_path())
+    def upsert_data(self, df_instance, collection_name, id_column):
+        for index, row in df_instance.iterrows():
+            doc_id = row[id_column]
+            doc_ref = self.db.collection(collection_name).document(doc_id)
 
-# Initialize the app with a service account, granting admin privileges
-app = firebase_admin.initialize_app(cred)
+            if not doc_ref.get().exists:  # Check if the document exists
+                data = row.to_dict()
+                doc_ref.set(data, merge=True)
 
-# Initialize Firestore
-db = firestore.client()
+    def upsert_grouped_data(self, df_instance, collection_name, id_column):
+        for index, row in df_instance.iterrows():
+            doc_id = row[id_column].replace(" ", "_").lower()
+            doc_ref = self.db.collection(collection_name).document(doc_id)
 
+            data = row.to_dict()
+            doc_ref.set(data, merge=True)
 
-def upsert_data(df, db):
-    # Iterate through the DataFrame and upsert each row
-    for index, row in df.iterrows():
-        doc_id = row["id"]  # Replace 'your_id_column' with the actual column name
-        doc_ref = db.collection("fact_checking").document(doc_id)
-
-        # Convert the row to a dictionary
-        data = row.to_dict()
-
-        # Upsert the document
-        doc_ref.set(data, merge=True)
+    def close(self):
+        firebase_admin.delete_app(self.app)
 
 
-# Call the upsert function
-upsert_data(df, db)
+def load_parquet(file_name):
+    file_path = get_datasets_dir(file_name)
+    return pd.read_parquet(file_path)
 
-# Optional: Revoke the token or cleanup if necessary
-firebase_admin.delete_app(app)
+
+def main():
+    # Initialize Firebase
+    firebase_handler = FirebaseHandler(get_firebase_key_path())
+
+    # Load datasets
+    main_df = load_parquet("processed_fact_checking_with_scores.parquet")
+    party_df = load_parquet("average_by_party.parquet")
+    author_df = load_parquet("average_by_author.parquet")
+
+    # Upsert main dataset
+    firebase_handler.upsert_data(main_df, "fact_checking", "id")
+
+    # Upsert party averages
+    firebase_handler.upsert_grouped_data(party_df, "party_averages", "party")
+
+    # Upsert author averages
+    firebase_handler.upsert_grouped_data(author_df, "author_averages", "author")
+
+    # Optionally print for debugging
+    print(main_df.head())
+    print(party_df.head())
+    print(author_df.head())
+
+    # Close Firebase connection
+    firebase_handler.close()
+
+
+if __name__ == "__main__":
+    main()

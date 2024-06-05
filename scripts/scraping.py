@@ -15,7 +15,6 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 from scripts.path_operators import get_datasets_dir
 
-# Setup logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
@@ -199,7 +198,7 @@ def main():
             f"No existing file found at {file_path}. All IDs will be considered new."
         )
 
-    max_cards = 500
+    max_cards = 50
     all_cards = load_all_cards(driver, max_cards)
     new_cards = [card for card in all_cards if card["id"] not in existing_ids]
     for i, card in enumerate(new_cards):

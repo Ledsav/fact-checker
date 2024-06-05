@@ -1,4 +1,5 @@
 import re
+from datetime import datetime
 
 import pandas as pd
 
@@ -53,14 +54,39 @@ POSITIVE_KEYWORDS = [
     "cifre esatte",
 ]
 
+MONTHS_IT = {
+    "gennaio": "January",
+    "febbraio": "February",
+    "marzo": "March",
+    "aprile": "April",
+    "maggio": "May",
+    "giugno": "June",
+    "luglio": "July",
+    "agosto": "August",
+    "settembre": "September",
+    "ottobre": "October",
+    "novembre": "November",
+    "dicembre": "December",
+    "GENNAIO": "January",
+    "FEBBRAIO": "February",
+    "MARZO": "March",
+    "APRILE": "April",
+    "MAGGIO": "May",
+    "GIUGNO": "June",
+    "LUGLIO": "July",
+    "AGOSTO": "August",
+    "SETTEMBRE": "September",
+    "OTTOBRE": "October",
+    "NOVEMBRE": "November",
+    "DICEMBRE": "December",
+}
+
 
 def load_dataset(file_path):
-    # Function to load the dataset from a Parquet file
     return pd.read_parquet(file_path)
 
 
 def classify_verdict(verdict):
-    # Function to classify the verdict based on keywords
     verdict = verdict.lower()
     if any(re.search(rf"\b{kw}\b", verdict) for kw in NEGATIVE_KEYWORDS):
         return -1
@@ -72,24 +98,81 @@ def classify_verdict(verdict):
         return 0  # Default to neutral if no keywords are found
 
 
+def standardize_date(date_str):
+    if pd.isna(date_str) or date_str.strip() == "":
+        return "1900-01-01"  # Assign a default old date for missing or empty dates
+
+    # Replace Italian months with English months
+    for it_month, en_month in MONTHS_IT.items():
+        date_str = date_str.replace(it_month, en_month)
+
+    # Try parsing different date formats
+    for date_format in (
+        "%d %B %Y",
+        "%d %b %Y",
+        "%B %Y",
+        "%b %Y",
+        "%d %B",
+        "%d %b",
+        "%B",
+        "%b",
+    ):
+        try:
+            parsed_date = datetime.strptime(date_str, date_format)
+            # If year is missing, add default year
+            if parsed_date.year == 1900:
+                parsed_date = parsed_date.replace(year=1900)
+            # If month is missing, add default month
+            if (
+                parsed_date.month == 1
+                and "%B" not in date_format
+                and "%b" not in date_format
+            ):
+                parsed_date = parsed_date.replace(month=1)
+            # If day is missing, add default day
+            if parsed_date.day == 1 and "%d" not in date_format:
+                parsed_date = parsed_date.replace(day=1)
+            return parsed_date.strftime("%Y-%m-%d")
+        except ValueError:
+            pass
+    return "1900-01-01"  # Return default old date if no format matches
+
+
 def process_dataset(df):
-    # remove rows with empty is 'No verdict available'
     df = df[df["verdict"] != "No verdict available"]
-
-    # remove rows with empty 'verdict'
-    df = df.dropna(subset=["verdict"])
-
-    # remove duplicates
+    df = df.dropna(
+        subset=["verdict", "author", "party"]
+    )  # Remove rows with NaN in 'verdict', 'author', or 'party'
+    df = df[df["author"].str.strip() != ""]  # Remove rows with empty author
+    df = df[df["party"].str.strip() != ""]  # Remove rows with empty party
     df = df.drop_duplicates(subset=["id"])
-
-    # Function to process the dataset and classify verdicts
+    df["date"] = df["date"].apply(standardize_date)
     df["score"] = df["verdict"].apply(classify_verdict)
+    df = df.sort_values(by="date", ascending=False)
     return df
 
 
 def save_dataset(df, file_path):
-    # Function to save the processed dataset to a Parquet file
     df.to_parquet(file_path, index=False, engine="pyarrow")
+
+
+def create_grouped_parquets(df):
+    # Group by party and calculate mean score and count
+    df_party = (
+        df.groupby("party")
+        .agg(average_score=("score", "mean"), count=("score", "size"))
+        .reset_index()
+    )
+
+    # Group by author and calculate mean score and count
+    df_author = (
+        df.groupby("author")
+        .agg(average_score=("score", "mean"), count=("score", "size"))
+        .reset_index()
+    )
+
+    save_dataset(df_party, get_datasets_dir("average_by_party.parquet"))
+    save_dataset(df_author, get_datasets_dir("average_by_author.parquet"))
 
 
 def main():
@@ -106,7 +189,10 @@ def main():
     # Save the processed dataset
     save_dataset(df, output_path)
 
-    # Print the DataFrame
+    # Create additional parquet files
+    create_grouped_parquets(df)
+
+    # Print the DataFrame (optional for debugging)
     print(df)
 
 
