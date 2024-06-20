@@ -9,7 +9,7 @@ from selenium.common import NoSuchElementException, TimeoutException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.wait import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
 
@@ -18,7 +18,7 @@ from scripts.path_operators import get_datasets_dir
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
-    handlers=[logging.FileHandler("fact_checker.log"), logging.StreamHandler()],
+    handlers=[logging.FileHandler("../logs/fact_checker.log"), logging.StreamHandler()],
 )
 
 
@@ -34,7 +34,7 @@ def setup_driver():
 def handle_cookie_consent(driver):
     try:
         cookie_button = WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable((By.ID, "CybotCookiebotDialogBodyButtonDecline"))
+            ec.element_to_be_clickable((By.ID, "CybotCookiebotDialogBodyButtonDecline"))
         )
         cookie_button.click()
     except Exception as e:
@@ -44,7 +44,7 @@ def handle_cookie_consent(driver):
 def handle_steady_floating_button(driver):
     try:
         WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable((By.ID, "steady-floating-button"))
+            ec.element_to_be_clickable((By.ID, "steady-floating-button"))
         ).click()
         time.sleep(1)
     except Exception as e:
@@ -103,7 +103,7 @@ def load_all_cards(driver, max_cards=None):
             break
         try:
             WebDriverWait(driver, 10).until(
-                EC.element_to_be_clickable(
+                ec.element_to_be_clickable(
                     (By.XPATH, '//button[contains(@class, "btn isTag isOutline")]')
                 )
             ).click()
@@ -123,7 +123,7 @@ def find_verdict(driver, card, card_index):
         # Construct the XPath to find the article based on the title
         article_xpath = f'//h3[contains(text(),"{title}")]/ancestor::article'
         article = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.XPATH, article_xpath))
+            ec.presence_of_element_located((By.XPATH, article_xpath))
         )
 
         logging.info(
@@ -133,7 +133,7 @@ def find_verdict(driver, card, card_index):
         # Find the button within the article and click it
         verdict_button_xpath = "//button[contains(@class, 'pt-8') and .//div[contains(text(), 'Vai al verdetto')]]"
         verdict_button = WebDriverWait(article, 10).until(
-            EC.element_to_be_clickable((By.XPATH, verdict_button_xpath))
+            ec.element_to_be_clickable((By.XPATH, verdict_button_xpath))
         )
         verdict_button.click()
 
@@ -153,7 +153,7 @@ def find_verdict(driver, card, card_index):
         # Extract the verdict text from the updated article element
         verdict_xpath = ".//h3[contains(@class, 'declaration line-clamp-6') and contains(@class, 'text-white')]"
         verdict_text_element = WebDriverWait(article, 10).until(
-            EC.visibility_of_element_located((By.XPATH, verdict_xpath))
+            ec.visibility_of_element_located((By.XPATH, verdict_xpath))
         )
         card["verdict"] = verdict_text_element.text.strip()
 
@@ -183,7 +183,7 @@ def main():
     url = "https://pagellapolitica.it/fact-checking"
     driver.get(url)
     WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.CLASS_NAME, "col-span-4"))
+        ec.presence_of_element_located((By.CLASS_NAME, "col-span-4"))
     )
     handle_cookie_consent(driver)
     handle_steady_floating_button(driver)
