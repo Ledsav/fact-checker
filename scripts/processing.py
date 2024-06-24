@@ -243,6 +243,32 @@ def process_dataset(df):
     return df
 
 
+def add_first_and_last_date(original_df, df_group, groupby_col):
+    # Ensure the date column is in datetime format
+    original_df['date'] = pd.to_datetime(original_df['date'], errors='coerce')
+    # Exclude the placeholder date
+    original_df = original_df[original_df['date'].dt.year != 1900]
+
+    # Group by the relevant columns and calculate first and last date
+    date_info = original_df.groupby(groupby_col)['date'].agg(['min', 'max']).reset_index()
+    date_info.columns = [groupby_col, 'first_date', 'last_date']
+
+    # Merge the date_info back to the group dataframe
+    df_group = pd.merge(df_group, date_info, on=groupby_col, how='left')
+
+    return df_group
+
+
+def add_sources_column(original_df, df_group, groupby_col):
+    sources = original_df.groupby(groupby_col)['source'].apply(lambda x: list(x.unique())).reset_index()
+    sources.columns = [groupby_col, 'sources']
+
+    # Merge the sources back to the group dataframe
+    df_group = pd.merge(df_group, sources, on=groupby_col, how='left')
+
+    return df_group
+
+
 def save_dataset(df, file_path):
     df.to_parquet(file_path, index=False, engine="pyarrow")
 
@@ -261,6 +287,14 @@ def create_grouped_parquets(df):
     ).reset_index()
     df_party = add_party_orientation(df_party)
     df_party['party_image'] = df_party['party'].apply(fetch_wikipedia_image)
+
+    # Add first and last date and sources information for parties
+    df_party = add_first_and_last_date(df, df_party, 'party')
+    df_party = add_sources_column(df, df_party, 'party')
+
+    # Add first and last date and sources information for authors
+    df_author = add_first_and_last_date(df, df_author, 'author')
+    df_author = add_sources_column(df, df_author, 'author')
 
     save_dataset(df_party, get_datasets_dir("average_by_party.parquet"))
     save_dataset(df_author, get_datasets_dir("average_by_author.parquet"))

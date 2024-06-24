@@ -1,4 +1,5 @@
 import firebase_admin
+import numpy as np
 import pandas as pd
 from firebase_admin import credentials, firestore
 
@@ -18,6 +19,7 @@ class FirebaseHandler:
 
             if not doc_ref.get().exists:  # Check if the document exists
                 data = row.to_dict()
+                data = self.convert_values(data)
                 doc_ref.set(data, merge=True)
 
     def upsert_grouped_data(self, df_instance, collection_name, id_column):
@@ -26,7 +28,16 @@ class FirebaseHandler:
             doc_ref = self.db.collection(collection_name).document(doc_id)
 
             data = row.to_dict()
+            data = self.convert_values(data)
             doc_ref.set(data, merge=True)
+
+    def convert_values(self, data):
+        for key, value in data.items():
+            if isinstance(value, np.ndarray):
+                data[key] = value.tolist()
+            elif pd.isna(value):
+                data[key] = None
+        return data
 
     def close(self):
         firebase_admin.delete_app(self.app)
@@ -47,10 +58,10 @@ def main():
     author_df = load_parquet("average_by_author.parquet")
 
     # Upsert main dataset
-    firebase_handler.upsert_data(main_df, "fact_checking", "id")
+    # firebase_handler.upsert_data(main_df, "fact_checking", "id")
 
     # Upsert party averages
-    firebase_handler.upsert_grouped_data(party_df, "party_averages", "party")
+    # firebase_handler.upsert_grouped_data(party_df, "party_averages", "party")
 
     # Upsert author averages
     firebase_handler.upsert_grouped_data(author_df, "author_averages", "author")
